@@ -1137,8 +1137,16 @@ module SolvationScheme
     if (ltrace) call PrintTrace()
 
     if (size(emi)<1) call PrintError (ekey=1101, lstop=.true.)
-    shift = es*eV2H - ec + ecw + em - emi(1)
-    emi   = emi + shift
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! MODIFICATION BY MEHDI ZARE   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   ! em is the mean filed average over the energies of the first 100 conformations with and without QM charges
+   ! Go to Code SmssEvaluateEnergy.f90 for more information
+   ! and go to code MeanField.f90 to understand how it is calculates
+   shift = es*eV2H - ec + ecw + em
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! END OF MODIFICATION          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!     
+    ! FAHEEM's Original line
+!   shift = es*eV2H - ec + ecw + em - emi(1) 
+   
+ emi   = emi + shift
 
   end subroutine CalculateSmssEnergy_dpX4dpa
   !******************************************************************************************************************!

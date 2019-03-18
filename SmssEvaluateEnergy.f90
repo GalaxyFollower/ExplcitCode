@@ -251,8 +251,26 @@ program SmssEvaluateEnergy
 
   !Read DLPOLY energies from output files.
   if (smss%mode=='EXPLICIT') then
-    call file4%ReadFromDisc (file=trim(smss%wdir_refimg)//'MMS_REPLAY')
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   MODIFICATION BY MEHDI ZARE  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!     Preciously we used the first conformation for refimg while 100
+!     conformations were used for PEECM, hence we came up with this modification
+!     that we need to use 100 conformation and use the mean field avergae.
+!     Basically, this is just a fixed number that is {(1/100)* SUM (em(k)-emi(k), k=1-100}, where em(k) is the energy of one
+!     conformation without QM cahrges and emi(k) is the energy of that conformation with QM charges that we got from PEECM       
+!     Here I wrote my code and did some modifications in smss-energy.sh code in order to get this fixed number and I am 
+!     going to store in in a file called "MMS_REPLAY_AVERAGE" in line 3 and use
+!     Faheem code to read this value and store in in 'scfem' and pass it through
+!     the code CalulateSmssEnegy as em and substitute (em-emi(1)) in
+!     CalulateSmssEnegy subroutine with just em which is my average fixed number
+!
+!
+! 
+!     ! FAHEEM's Original line that was comented out by Mehdi Zare   
+!    !call file4%ReadFromDisc (file=trim(smss%wdir_refimg)//'MMS_REPLAY')
+    call file4%ReadFromDisc (file=trim(smss%wdir_refimg)//'MMS_REPLAY_AVERAGE')
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! END OF MODIFICATIONS BY MEHDI ZARE  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     call ExtractDlpolyEnergy (file=file4, tk=tkr, scfe=scfem)
+  write(*,*) 'scfem is ' , scfem   ! FLAG
     call file5%ReadFromDisc (file=trim(smss%wdir_dlpoly)//'MMS_STEP')
     call ExtractDlpolyEnergy (file=file5, tk=tkn, scfei=scfemn, lnew=.true.)
       if (abs(tkn-tkr)>stol) call PrintError (ekey=3041, lstop=.true.)

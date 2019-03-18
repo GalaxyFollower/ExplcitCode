@@ -18,6 +18,8 @@ rm -f vasp-build-supercell-from-poscar
 rm -f vasp-extract-maximum-absolute-force
 rm -f dlpoly-replay-history-4Cores
 
+rm -f MeanField
+
 # compile modules
 $COMPILER -c Parameters.f90 Debugger.f90 Timers.f90
 $COMPILER -c MemoryManagement.f90 UtilityProcedures.f90
@@ -54,6 +56,8 @@ $COMPILER -o turbomole-extract-maximum-absolute-force TurbomoleExtractMaximumAbs
 $COMPILER -o vasp-build-supercell-from-poscar VaspBuildSupercellFromPoscar.f90 smss-lib.a
 $COMPILER -o vasp-extract-maximum-absolute-force VaspExtractMaximumAbsoluteForce.f90 smss-lib.a
 $COMPILER -o moment-of-inertia MomentOfInertia.f90 smss-lib.a
+
+gfortran MeanField.f90 -o  MeanField
 
 # clean up
 rm -f *.mod *.o *.out
