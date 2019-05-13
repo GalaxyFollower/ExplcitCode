@@ -28,6 +28,10 @@ program DlpolyReplayHistory
   integer               :: ii, unit, code
   integer               :: aa, bb, cc
 
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!MODIFICATION BY MEHDI ZARE!!!!!!!!!!!!!!!!!!!!!!!
+  integer               :: nlinestderr, error_flag, ierror
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!END OF MODIFICATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   procname = 'DlpolyReplayHistory::DlpolyReplayHistory'
   if (ltrace) call PrintTrace
 
@@ -83,6 +87,26 @@ program DlpolyReplayHistory
 
     !Execute command-line.
     call ExecuteSystemCommand (cmdl=cmdl)
+   
+!!!!!!!!!!!!!!!!!!!!!!!!!!!MODIFICATION BY MEHDI ZARE!!!!!!!!!!!!!!!!!!
+    nlinestderr=0
+    open(1000, file='stderr', status='old', action='read', iostat = ierror)
+      do
+        read (1000, *, end=10)
+          if (ierror /=0 ) then                  !!!!FALG
+            write(*,*) " Problem with counting lines in file:  stderr"
+            error_flag = 1
+            call EXIT(0)
+          end if
+       nlinestderr=nlinestderr+1
+     end do
+   10 close(1000)
+   ! Check to see if anything is wrong
+   if (nlinestderr /=0) then
+     write(*,*) " There is sth wrong in stderr"
+     call EXIT(0)
+   end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!END OF MODIFICATION!!!!!!!!!!!!!!!!!!
   end do
 
   close (unit=unit)
