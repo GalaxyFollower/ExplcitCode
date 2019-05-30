@@ -17,6 +17,7 @@ rm -f turbomole-extract-maximum-absolute-force
 rm -f vasp-build-supercell-from-poscar
 rm -f vasp-extract-maximum-absolute-force
 rm -f dlpoly-replay-history-4Cores
+rm -f dlpoly-replay-history-4Cores
 
 rm -f MeanField
 
@@ -46,6 +47,7 @@ $COMPILER -o dlpoly-replace-field-charges DlpolyReplaceFieldCharges.f90 smss-lib
 # smss execution
 $COMPILER -o dlpoly-replay-history DlpolyReplayHistory.f90 smss-lib.a
 $COMPILER -o dlpoly-replay-history-4Cores DlpolyReplayHistory4Cores.f90 smss-lib.a
+$COMPILER -o dlpoly-replay-history-2Cores DlpolyReplayHistory2Cores.f90 smss-lib.a
 $COMPILER -o smss-evaluate-energy SmssEvaluateEnergy.f90 smss-lib.a
 $COMPILER -o smss-evaluate-gradients SmssEvaluateGradients.f90 smss-lib.a
 
