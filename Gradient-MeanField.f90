@@ -1,5 +1,13 @@
 program fun
 implicit none
+!**************************************************************************************************!
+!               Author          :       Mehdi Zare                                                 !
+!               date            :       04/20/2019                                                 !
+!               Purpose         :       Calculationg Mean Field average of                         !
+!                                       gradients for reference HISTORY                            !
+!               Modification    :                                                                  !
+!**************************************************************************************************!
+
 
 integer  ,  parameter                   ::      dp = selected_real_kind(15, 307)
 character(len=50)                       ::      file1 = 'MMS_REPLAY_Refimg_100'
