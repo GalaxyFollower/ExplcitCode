@@ -798,7 +798,7 @@ module FileParsers
 
   subroutine ExtractDlpolyGradients_dpgtftcd (file, tk, gmm)
     use Debugger,              only: PrintError, procname, ltrace, PrintTrace
-    use Parameters,            only: dp, sl
+    use Parameters,            only: dp, sl, zero
     use GenericInputOutput,    only: GenericTextFile
     use CoordinateFileFormats, only: CoordData
     implicit none
@@ -836,7 +836,12 @@ module FileParsers
     if (buff(1:7)/='$energy') call PrintError (ekey=4001, lstop=.true., msg1='Section: DLPOLY energy')
     buff = adjustl(file%line(4))
     if (buff(1:10)/='$gradients') call PrintError (ekey=4001, lstop=.true., msg1='Section: DLPOLY gradients')
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Modification by Mehdi Zare !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!     
+        !Remove all forces from ensemble.
+    gmm%fx = zero
+    gmm%fy = zero
+    gmm%fz = zero
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   End of Modification        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !Extract forces (ignore indices).
     do ii = 1, gmm%numa
       read (file%line(ii+4),*,iostat=code) aa, bb, gmm%fx(ii), gmm%fy(ii), gmm%fz(ii)

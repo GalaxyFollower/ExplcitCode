@@ -19,7 +19,7 @@ program SmssEvaluateGradients
   implicit none
 
   type(StopWatch)       :: timer
-  type(GenericTextFile) :: file1, file2, file3, file4, file5, file6, file7, file8
+  type(GenericTextFile) :: file1, file2, file3, file4, file5, file6, file7, file8, file777
   type(GenericTextFile) :: filed, fileh
   type(CoordData)       :: datac, datacw
   type(CoordData)       :: datame, datami, datamr
@@ -33,6 +33,7 @@ program SmssEvaluateGradients
   real(dp)              :: tkn, tkr
   real(dp)              :: scfes, scfec, scfecw, scfem
   real(dp), allocatable :: scfemn(:), scfemo(:)
+
 
   procname = 'SmssEvaluateGradients::SmssEvaluateGradients'
   if (ltrace) call PrintTrace()
@@ -179,12 +180,19 @@ program SmssEvaluateGradients
   !Read DLPOLY gradients from output files.
   if (smss%mode=='EXPLICIT') then
     call datac%Duplicate (dupl=datame)
-    call datac%Duplicate (dupl=datami)
+    call datac%Duplicate (dupl=datami) 
     call datac%Duplicate (dupl=datamr)
-    call file6%ReadFromDisc (file=trim(smss%wdir_refimg)//'MMS_REPLAY')
-    call ExtractDlpolyGradients (file=file6, tk=tkn, gmm=datamr)
-      if (abs(tkn-tkr)>stol) call PrintError (ekey=3041, lstop=.true.)
-    call file7%ReadFromDisc (file=trim(smss%wdir_dlpoly)//'MMS_STEP')
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Modification by Mehdi Zare          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       we don't need this line because we are going to calculate the average                                            !  
+!       difference of gradients but not the first image                                                                  !
+!                                                                                                                        !
+!   ! call file6%ReadFromDisc (file=trim(smss%wdir_refimg)//'MMS_REPLAY')                                                !
+
+    !call ExtractDlpolyGradients (file=file6, tk=tkn, gmm=datamr)
+    !  if (abs(tkn-tkr)>stol) call PrintError (ekey=3041, lstop=.true.)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! End of Modification                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
+   call file7%ReadFromDisc (file=trim(smss%wdir_dlpoly)//'MMS_STEP')
     call ExtractDlpolyGradients (file=file7, tk=tkn, emin=scfemn, emio=scfemo, gmme=datame, gmmi=datami)
       if (abs(tkn-tkr)>stol) call PrintError (ekey=3041, lstop=.true.)
   end if
@@ -193,7 +201,39 @@ program SmssEvaluateGradients
   if (smss%mode=='IMPLICIT') then
     call CalculateSmssGradients (gmc=datac, gms=datas, gmcw=datacw, gmi=sgmn)
   else if (smss%mode=='EXPLICIT') then
-    call CalculateSmssGradients (gmc=datac, gms=datas, gmmr=datamr, gmme=datame, gmmi=datami, gmcw=datacw, gmi=sgmn)
+!!!!!!!!!!!!!!!!!!!!!!!!!!              MODIFICATION BY MEHDI ZARE        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!        I have calculated the mean field average of gradients using another                                            !
+!        code called "Gradient-MeanField.f90 ". The output of that code is the average of difference                    !
+!        in gradients of, for example, 100 conformation of Refimg and Dlpoly.                                           !
+!        Refimage and Dlpoly 100 structures are the same,neverhteless, in Dlpoly                                        !
+!        FIELD file we have charges but in Refimage FIELD file we do not have                                           !
+!        any charges. The code "Gradient-MeanField.f90 " will return the                                                !
+!        averaged value difference between 4th and 6th terms of equation 31 in                                          !
+!        Faheem's paper. On the other hand, ExtractDlpolyGradients (file=file7,                                         !
+!        tk=tkn, emin=scfemn, emio=scfemo, gmme=datame, gmmi=datami)  subroutine,                                       !
+!        from above, return gmmi (6th term but just 1st image) and                                                      !
+!        ExtractDlpolyGradients (file=file6, tk=tkn, gmm=datamr) returns the                                            !   
+!        gmmr(4th term just for the first image). Beacuse they already                                                  !
+!        calculated and I do not want to change the Faheem's code of                                                    !
+!        ExtractDlplyGradients, I put gmmr equals zero and get the difference                                           !
+!        from file "GradAVERAGE", the outout of my fortran code, and pass it as                                         !
+!        gmmi (datami).                                                                                                 !
+! count lines in file 'GradAVERAGE'                                                                                     !
+    call file777%ReadFromDisc (file=trim(smss%wdir_refimg)//'GradAVERAGE')                                              !
+                                                                                                                        !
+    call ExtractDlpolyGradients (file=file777, tk=tkn, gmm=datami)                                                      !
+                                                                                                                        !
+    ! the ExtractDlpolyGradients will read the values in my file GradAVERAGE                                            !
+    ! and                                                                                                               !
+    ! change their signs, So I need to pass the datami with negative value to                                           !
+    ! have my values in my file correctly                                                                               !
+    ! becase I cannot pass it as negative here, I will the sign in the last                                             !
+    ! equatino of CalculateSmssGradients                                                                                !
+                                                                                                                        !
+   ! Faheem's original line                                                                                             !
+   call CalculateSmssGradients (gmc=datac, gms=datas, gmmr=datamr, gmme=datame, gmmi=datami, gmcw=datacw, gmi=sgmn)     !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!     END OF MODIFICATION               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     call WriteDlpolyGradients (file=file8, tk=tkn, gmm=datame)
     call file8%WriteToDisc (file=trim(smss%wdir_dlpoly)//'MMS_GRADIENTS', mode='replace')
   end if

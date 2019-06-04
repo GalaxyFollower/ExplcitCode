@@ -46,7 +46,7 @@ program DlpolyReplayHistory
   write (buff2,F101,iostat=code) offset
     if (code>0) call PrintError (ekey=2121, lstop=.true.)
   buff2 = adjustl(buff2)
-  cmdl = 'mpirun -np 4 /home/mzare/DL_POLY/dlpoly-4.03.4-SH-Corrected/execute/dlpoly-psr 1> stdout 2> stderr'
+  cmdl = 'mpirun -np 2 /home/mzare/DL_POLY/dlpoly-4.03.4-SH-Corrected/execute/dlpoly-psr 1> stdout 2> stderr'
 
   !Read matching indices and coordinate shifts.
   call file1%ReadFromDisc (file='MMS_ENSEMBLE')

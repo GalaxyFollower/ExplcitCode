@@ -13,12 +13,13 @@ integer  ,  parameter                   ::      dp = selected_real_kind(15, 307)
 character(len=50)                       ::      file1 = 'MMS_REPLAY_Refimg_100'
 character(len=50)                       ::      file2 = 'MMS_ENSEMBLE'
 character(len=50)                       ::      file3 = 'MMS_REPLAY_Dlpoly_100'
-character(len=256)                      ::      cmdl, str_3, str_4, str_5
+character(len=256)                      ::      cmdl,str_1,str_2, str_3, str_4, str_5
 character(len=256)                      ::      header(4)
-character(len=8), allocatable           ::      clusNum(:), confNum(:)
+integer, allocatable                    ::      clusNum(:), confNum(:)
 integer                                 ::      error_flag,alloc_err, ierror                    
 integer                                 ::      i,jj,kk,nline1, nline2, nline3, QMatoms, frameRef, frameDL         
 real(dp), allocatable, dimension (:)    ::      gradxRef,gradyRef,gradzRef, gradxDL,gradyDL,gradzDL, AveGradX, AveGradY, AveGradZ
+
 
 ! count number of lines in files, MMS_ENSEMBLE, MMS_REPLAY_Refimg_100, and
 call countline(file2,nline2)           ! nline2 is the number of lines in MMS_ENSEMPLE file
@@ -81,32 +82,30 @@ open(unit=5555, file=file1, status='old', action='read', iostat = ierror)
 
    ! Read QM cluster forces
    do jj=1,QMatoms
-       read(5555,*, iostat = ierror) clusNum(jj), confNum(jj), str_3, str_4, str_5
+       read(5555,*, iostat = ierror) str_1,str_2, str_3, str_4, str_5
         if (ierror /=0 ) then                  !!!!FALG
           write(*,*) " Problem with reading file: ", file1
           call EXIT(0)
         end if
+       ! convert strings to numbers
+        read(str_1,*) clusNum(jj)
+        read(str_2,*) confNum(jj)
    end do
 close(5555)
 
-
-
 !Wrtie the data in files named 'GradAVERAGE'
-open    ( unit = 500, file = 'GradAVERAGE', status = 'new')
- !write header
- do kk=1,4
-    write(500,*) trim(header(kk))
- end do
+  !write header
+
+  cmdl = 'head -4 ' // trim('MMS_REPLAY_Refimg_100') // ' > GradAVERAGE'
+  call system (trim(cmdl))
  
+open    ( unit = 500, file = 'GradAVERAGE',Access = 'append', status = 'old')
  !write Gradienets and atoms numbers
  do jj=1,QMatoms  
-   write   (500, *) '       ', clusNum(jj), confNum(jj), AveGradX(jj), AveGradY(jj), AveGradZ(jj)
+   write   (500, 5030)  clusNum(jj), confNum(jj), AveGradX(jj), AveGradY(jj), AveGradZ(jj)
+   5030 format (4x, I6, 4x, I6, 3x , 3(F17.14,3x))
  end do
 close(500)
-
-!cmdl='head -4  ' // trim('MMS_REPLAY_Dlpoly_100') // ' >> copy'
-!call system (trim(cmdl))
-
 
 deallocate(gradxRef,gradyRef,gradzRef, gradxDL,gradyDL,gradzDL,AveGradX, AveGradY, AveGradZ, stat = alloc_err)
 deallocate(clusNum,confNum, stat = alloc_err)

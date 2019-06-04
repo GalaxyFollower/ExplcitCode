@@ -1186,7 +1186,7 @@ module SolvationScheme
     end do
 
   end subroutine CalculateSmssGradients_tcdX2vpdsg
-
+  
   subroutine CalculateSmssGradients_tcdX5vpdsg (gmc, gms, gmmr, gmme, gmmi, gmcw, gmi)
     use Debugger,              only: PrintError, procname, ltrace, PrintTrace
     use Parameters,            only: zero, eVoA2HoB
@@ -1197,7 +1197,7 @@ module SolvationScheme
     type(PoscarData),   intent(in)    :: gms      !QM surface (gradients in eV/Angstrom).
     type(CoordData),    intent(in)    :: gmmr     !QM cluster (reference) in MM system (gradients in a.u.).
     type(CoordData),    intent(in)    :: gmme     !QM cluster (ensemble) in MM system (gradients in a.u.).
-    type(CoordData),    intent(in)    :: gmmi     !QM cluster (first) in MM system (gradients in a.u.).
+    type(CoordData),    intent(in)    :: gmmi     !QM cluster (first) in MM system (gradients in a.u.).   !
     type(CoordData),    intent(inout) :: gmcw     !QM cluster in explicit solvent / ESMSS (gradients in a.u.).
     type(SmssGeometry), intent(in)    :: gmi      !SMSS geometry (matching indices).
 
@@ -1218,11 +1218,28 @@ module SolvationScheme
       if (.not. gmc%fix(ii)) then
         jj = gmi%idxs(ii)
           if ((jj<1) .or. (jj>gms%numa)) call PrintError (ekey=3011, lstop=.true.)
-        gmcw%fx(ii) = gms%fx(jj)*eVoA2HoB - gmc%fx(ii) + gmcw%fx(ii) + gmmr%fx(ii) + gmme%fx(ii) - gmmi%fx(ii)
-        gmcw%fy(ii) = gms%fy(jj)*eVoA2HoB - gmc%fy(ii) + gmcw%fy(ii) + gmmr%fy(ii) + gmme%fy(ii) - gmmi%fy(ii)
-        gmcw%fz(ii) = gms%fz(jj)*eVoA2HoB - gmc%fz(ii) + gmcw%fz(ii) + gmmr%fz(ii) + gmme%fz(ii) - gmmi%fz(ii)
-      end if
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  Modification by Mehdi Zare   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !                                                                                                           !
+    !   Faheem's Original lines                                                                                 !
+    !   gmcw%fx(ii) = gms%fx(jj)*eVoA2HoB - gmc%fx(ii) + gmcw%fx(ii) + gmmr%fx(ii) + gmme%fx(ii) - gmmi%fx(ii)  !
+    !   gmcw%fy(ii) = gms%fy(jj)*eVoA2HoB - gmc%fy(ii) + gmcw%fy(ii) + gmmr%fy(ii) + gmme%fy(ii) - gmmi%fy(ii)  !
+    !   gmcw%fz(ii) = gms%fz(jj)*eVoA2HoB - gmc%fz(ii) + gmcw%fz(ii) + gmmr%fz(ii) + gmme%fz(ii) - gmmi%fz(ii)  !
+    !                                                                                                           !
+    !   Modified lines by Mehdi Zare                                                                            !
+    !   gmmi here is the average difference of 4th and 6th terms of Eq.31 in                                    !
+    !   Faheem's Paper that should be positive here. I change it to negative                                    !
+    !   because Faheem's subroutine read my file "GradAVERAGE" and changes its                                  !
+    !   sign, to return it to the correct value, I have to change the sign                                      !
+    !   here.                                                                                                   !
+        gmcw%fx(ii) = gms%fx(jj)*eVoA2HoB - gmc%fx(ii) + gmcw%fx(ii) + gmme%fx(ii) - gmmi%fx(ii)                !
+        gmcw%fy(ii) = gms%fy(jj)*eVoA2HoB - gmc%fy(ii) + gmcw%fy(ii) + gmme%fy(ii) - gmmi%fy(ii)                !
+        gmcw%fz(ii) = gms%fz(jj)*eVoA2HoB - gmc%fz(ii) + gmcw%fz(ii) + gmme%fz(ii) - gmmi%fz(ii)                !
+
+     end if
     end do
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   End of Modification             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
   end subroutine CalculateSmssGradients_tcdX5vpdsg
   !******************************************************************************************************************!

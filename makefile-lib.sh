@@ -20,6 +20,7 @@ rm -f dlpoly-replay-history-4Cores
 rm -f dlpoly-replay-history-4Cores
 
 rm -f MeanField
+rm -f GradMeanField
 
 # compile modules
 $COMPILER -c Parameters.f90 Debugger.f90 Timers.f90
@@ -60,6 +61,7 @@ $COMPILER -o vasp-extract-maximum-absolute-force VaspExtractMaximumAbsoluteForce
 $COMPILER -o moment-of-inertia MomentOfInertia.f90 smss-lib.a
 
 gfortran MeanField.f90 -o  MeanField
+gfortran Gradient-MeanField.f90 -o GradMeanField
 
 # clean up
 rm -f *.mod *.o *.out
